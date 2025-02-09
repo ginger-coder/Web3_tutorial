@@ -49,8 +49,7 @@ contract DepositWithdraw {
     function withdraw(uint256 amount) external {
         // 取款金额必须大于0
         require(amount > 0, "withdraw amount must be greater than 0");
-        // 转换成wei，方便用户以有eth取款
-        uint256 amountInWei = amount * 1e18;
+
         // 先计算利息，再进与取款金额比较
         // 存款时间内产生的利息
         uint256 interest = (BankWarehouse[msg.sender] *
@@ -61,11 +60,11 @@ contract DepositWithdraw {
 
         // 账户余额必须大于等于取款金额
         require(
-            BankWarehouse[msg.sender] >= amountInWei,
+            BankWarehouse[msg.sender] >= amount,
             "insufficient balance"
         );
-        BankWarehouse[msg.sender] -= amountInWei;
-        payable(msg.sender).transfer(amountInWei);
+        BankWarehouse[msg.sender] -= amount;
+        payable(msg.sender).transfer(amount);
     }
 
     /**
