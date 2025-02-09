@@ -6,16 +6,19 @@ contract DepositWithdraw {
     mapping(address => uint256) public BankWarehouse;
 
     // 用于记录用户上次存款的时间戳
-    mapping(address => uint256) public LastDepositTime;
+    mapping(address => uint256) private LastDepositTime;
 
     // 存款年化利率
-    uint256 public InterestRate = 0.05 * 1e18;
+    uint256 private InterestRate = 0.05 * 1e18;
 
     // 一年的秒数
-    uint256 public OneYearTimestamp = 365 * 24 * 60 * 60;
+    uint256 private OneYearTimestamp = 365 * 24 * 60 * 60;
 
     // 每秒的存款收益
-    uint256 public DepositInterest = InterestRate / OneYearTimestamp;
+    uint256 private DepositInterest = InterestRate / OneYearTimestamp;
+
+    // 银行初本金
+    uint256 private InitBank = msg.value;
 
     /**
      * 用户存款
@@ -83,5 +86,10 @@ contract DepositWithdraw {
         BankWarehouse[msg.sender] = 0;
         // 将存款金额转给用户
         payable(msg.sender).transfer(totalAmount);
+    }
+
+    /// 查询用户余额（ETH）只可读取，不可编辑 view关键字，返回余额
+    function getBalance() external view returns (uint256) {
+        return BankWarehouse[msg.sender];
     }
 }
