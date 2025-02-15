@@ -18,14 +18,14 @@ contract DepositWithdraw {
     uint256 private DepositInterest = InterestRate / OneYearTimestamp;
 
     // 银行初本金
-    uint256 private InitBank = msg.value;
+    // uint256 private InitBank = msg.value;
 
     /**
      * 用户存款
      * 存款必须为ETH payable类型
      * external 修饰符用于限制函数只能在外部合约或用户调用
      */
-    function deposit() external payable {
+    function deposit() public payable {
         require(msg.value > 0, "Amount must be greater than 0");
 
         if (BankWarehouse[msg.sender] > 0) {
@@ -49,7 +49,7 @@ contract DepositWithdraw {
      * 用户取款
      * external 修饰符用于限制函数只能在外部合约或用户调用
      */
-    function withdraw(uint256 amount) external {
+    function withdraw(uint256 amount) public {
         // 取款金额必须大于0
         require(amount > 0, "withdraw amount must be greater than 0");
 
@@ -74,7 +74,7 @@ contract DepositWithdraw {
      * 仅限有存款的用户调用，一次性提取所有存款
      */
 
-    function ownerWithdraw() external {
+    function ownerWithdraw() public {
         // 用户必须有存款
         uint256 amount = BankWarehouse[msg.sender];
         require(amount > 0, "no deposit found");
@@ -89,7 +89,7 @@ contract DepositWithdraw {
     }
 
     /// 查询用户余额（ETH）只可读取，不可编辑 view关键字，返回余额
-    function getBalance() external view returns (uint256) {
+    function getBalance() public view returns (uint256) {
         return BankWarehouse[msg.sender];
     }
 }

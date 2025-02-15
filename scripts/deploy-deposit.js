@@ -1,4 +1,4 @@
-const { ethers } = require("hardhat");
+const { ethers, run } = require("hardhat");
 
 async function main() {
     // 获取部署者账号（这里使用的是配置文件中指定的私钥）
@@ -10,16 +10,26 @@ async function main() {
 
     // 获取合约工厂并部署合约
     const ContractFactory = await ethers.getContractFactory("DepositWithdraw");
-
+    
     console.log("Deploying contract...");
-    const contract = await ContractFactory.deploy({
-        gasLimit: 5000000, // 提供更大的 gas
-    });
+    const contract = await ContractFactory.deploy();
     await contract.waitForDeployment();
     // console.log('contract', contract);
     const contractAddress = await contract.getAddress();
     console.log("Contract deployed to:", contractAddress);
+
     
+    // 验证合约
+    console.log("Verifying contract...");
+    try {
+        await contract.deploymentTransaction()?.wait(5);
+        await run("verify:verify", {
+            address: contractAddress,
+            constructorArguments: [],
+        });
+    } catch (error) {
+        console.log("error", error);
+    }
 }
 
 // 运行部署脚本

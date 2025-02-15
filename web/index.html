@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>InfoContract Interface</title>
+        <meta charset="UTF-8" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js"></script>
+        <style>
+            .container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+                padding: 20px;
+                font-family: Arial, sans-serif;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+
+            .button-container {
+                display: flex;
+                gap: 10px;
+            }
+
+            .button {
+                background-color: #3498db;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 16px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: background-color 0.3s;
+            }
+
+            .button:hover {
+                background-color: #2980b9;
+            }
+
+            .button:disabled {
+                background-color: #bdc3c7;
+                cursor: not-allowed;
+            }
+
+            .disconnect-button {
+                background-color: #e74c3c;
+            }
+
+            .disconnect-button:hover {
+                background-color: #c0392b;
+            }
+
+            .wallet-info {
+                background-color: #f8f9fa;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                padding: 16px;
+                text-align: center;
+                width: 100%;
+                display: none;
+            }
+
+            .contract-interface {
+                background-color: #f8f9fa;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                padding: 20px;
+                width: 100%;
+                display: none;
+            }
+
+            .input-group {
+                margin-bottom: 15px;
+            }
+
+            .input-group label {
+                display: block;
+                margin-bottom: 5px;
+                color: #2c3e50;
+            }
+
+            .input-group input {
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                margin-bottom: 10px;
+            }
+
+            .info-display {
+                margin-top: 20px;
+                padding: 15px;
+                background-color: #fff;
+                border-radius: 4px;
+                border: 1px solid #ddd;
+            }
+
+            .event-log {
+                margin-top: 20px;
+                padding: 15px;
+                background-color: #fff;
+                border-radius: 4px;
+                border: 1px solid #ddd;
+                max-height: 200px;
+                overflow-y: auto;
+            }
+
+            .event-item {
+                padding: 8px;
+                border-bottom: 1px solid #eee;
+            }
+
+            .event-item:last-child {
+                border-bottom: none;
+            }
+
+            .status {
+                padding: 10px;
+                margin-top: 10px;
+                border-radius: 4px;
+                display: none;
+            }
+
+            .success {
+                background-color: #d4edda;
+                color: #155724;
+                border: 1px solid #c3e6cb;
+            }
+
+            .error {
+                background-color: #f8d7da;
+                color: #721c24;
+                border: 1px solid #f5c6cb;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="button-container">
+                <button id="connectButton" class="button">
+                    <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"
+                        />
+                        <path d="M12 12h4" />
+                        <path d="M12 16V8" />
+                    </svg>
+                    连接 MetaMask
+                </button>
+                <button
+                    id="disconnectButton"
+                    class="button disconnect-button"
+                    style="display: none"
+                >
+                    <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
+                        <line x1="12" y1="2" x2="12" y2="12" />
+                    </svg>
+                    断开连接
+                </button>
+            </div>
+
+            <div id="walletInfo" class="wallet-info">
+                <div id="walletAddress"></div>
+                <div id="walletBalance"></div>
+            </div>
+
+            <div id="contractInterface" class="contract-interface">
+                <h3>合约交互</h3>
+
+                <div class="input-group">
+                    <label>合约地址：</label>
+                    <input
+                        type="text"
+                        id="contractAddress"
+                        placeholder="输入合约地址"
+                    />
+                    <button id="initContract" class="button">初始化合约</button>
+                </div>
+
+                <div id="contractFunctions" style="display: none">
+                    <div class="input-group">
+                        <label>设置信息：</label>
+                        <input
+                            type="text"
+                            id="nameInput"
+                            placeholder="输入名字"
+                        />
+                        <input
+                            type="number"
+                            id="ageInput"
+                            placeholder="输入年龄"
+                        />
+                        <button id="setInfoBtn" class="button">设置信息</button>
+                    </div>
+
+                    <div class="input-group">
+                        <button id="getInfoBtn" class="button">获取信息</button>
+                        <button id="sayHiBtn" class="button">Say Hi</button>
+                    </div>
+
+                    <div id="infoDisplay" class="info-display">
+                        <p>当前信息将显示在这里...</p>
+                    </div>
+
+                    <div class="event-log">
+                        <h4>事件日志</h4>
+                        <div id="eventList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="statusMessage" class="status"></div>
+        </div>
+
+        <script>
+            // 合约 ABI
+            const contractABI = [
+                {
+                    inputs: [
+                        {
+                            internalType: "address",
+                            name: "",
+                            type: "address",
+                        },
+                    ],
+                    name: "BankWarehouse",
+                    outputs: [
+                        {
+                            internalType: "uint256",
+                            name: "",
+                            type: "uint256",
+                        },
+                    ],
+                    stateMutability: "view",
+                    type: "function",
+                },
+                {
+                    inputs: [],
+                    name: "deposit",
+                    outputs: [],
+                    stateMutability: "payable",
+                    type: "function",
+                },
+                {
+                    inputs: [],
+                    name: "getBalance",
+                    outputs: [
+                        {
+                            internalType: "uint256",
+                            name: "",
+                            type: "uint256",
+                        },
+                    ],
+                    stateMutability: "view",
+                    type: "function",
+                },
+                {
+                    inputs: [],
+                    name: "ownerWithdraw",
+                    outputs: [],
+                    stateMutability: "nonpayable",
+                    type: "function",
+                },
+                {
+                    inputs: [
+                        {
+                            internalType: "uint256",
+                            name: "amount",
+                            type: "uint256",
+                        },
+                    ],
+                    name: "withdraw",
+                    outputs: [],
+                    stateMutability: "nonpayable",
+                    type: "function",
+                },
+            ];
+
+            let contract = null;
+            let signer = null;
+
+            // DOM 元素
+            const connectButton = document.getElementById("connectButton");
+            const disconnectButton =
+                document.getElementById("disconnectButton");
+            const walletInfo = document.getElementById("walletInfo");
+            const contractInterface =
+                document.getElementById("contractInterface");
+            const contractFunctions =
+                document.getElementById("contractFunctions");
+            const infoDisplay = document.getElementById("infoDisplay");
+            const eventList = document.getElementById("eventList");
+            const statusMessage = document.getElementById("statusMessage");
+
+            // 显示状态消息
+            function showStatus(message, isError = false) {
+                statusMessage.textContent = message;
+                statusMessage.className = `status ${
+                    isError ? "error" : "success"
+                }`;
+                statusMessage.style.display = "block";
+                setTimeout(() => {
+                    statusMessage.style.display = "none";
+                }, 3000);
+            }
+
+            // 检查是否安装了 MetaMask
+            const checkMetaMaskInstalled = () => {
+                if (typeof window.ethereum !== "undefined") {
+                    return true;
+                }
+                showStatus("请先安装 MetaMask!", true);
+                return false;
+            };
+
+            // 获取钱包余额
+            const getWalletBalance = async (address) => {
+                try {
+                    const balance = await window.ethereum.request({
+                        method: "eth_getBalance",
+                        params: [address, "latest"],
+                    });
+
+                    const balanceInEther = ethers.formatEther(balance);
+                    document.getElementById(
+                        "walletBalance"
+                    ).textContent = `余额: ${balanceInEther} ETH`;
+                } catch (error) {
+                    console.error("获取余额错误:", error);
+                    document.getElementById("walletBalance").textContent =
+                        "余额获取失败";
+                }
+            };
+
+            // 更新界面显示
+            const updateUI = (account) => {
+                if (account) {
+                    connectButton.style.display = "none";
+                    disconnectButton.style.display = "flex";
+                    document.getElementById(
+                        "walletAddress"
+                    ).textContent = `钱包地址: ${account.slice(
+                        0,
+                        6
+                    )}...${account.slice(-4)}`;
+                    walletInfo.style.display = "block";
+                    contractInterface.style.display = "block";
+                    getWalletBalance(account);
+                } else {
+                    connectButton.style.display = "flex";
+                    disconnectButton.style.display = "none";
+                    walletInfo.style.display = "none";
+                    contractInterface.style.display = "none";
+                    contractFunctions.style.display = "none";
+                    contract = null;
+                    signer = null;
+                }
+            };
+
+            // 初始化合约
+            async function initializeContract() {
+                const contractAddress =
+                    document.getElementById("contractAddress").value;
+                if (!ethers.isAddress(contractAddress)) {
+                    showStatus("请输入有效的合约地址", true);
+                    return;
+                }
+
+                try {
+                    const provider = new ethers.BrowserProvider(
+                        window.ethereum
+                    );
+                    signer = await provider.getSigner();
+                    contract = new ethers.Contract(
+                        contractAddress,
+                        contractABI,
+                        signer
+                    );
+
+                    console.log("contract", contract);
+
+                    // 监听事件
+                    contract.addListener("Instructor", (name, age) => {
+                        const eventItem = document.createElement("div");
+                        eventItem.className = "event-item";
+                        eventItem.textContent = `新事件: 名字 = ${name}, 年龄 = ${age}`;
+                        eventList.insertBefore(eventItem, eventList.firstChild);
+                    });
+
+                    contractFunctions.style.display = "block";
+                    showStatus("合约初始化成功！");
+                } catch (error) {
+                    console.error("合约初始化失败:", error);
+                    showStatus("合约初始化失败: " + error.message, true);
+                }
+            }
+
+            // 连接钱包
+            async function connectWallet() {
+                if (!checkMetaMaskInstalled()) return;
+
+                try {
+                    connectButton.disabled = true;
+                    const accounts = await window.ethereum.request({
+                        method: "eth_requestAccounts",
+                    });
+                    updateUI(accounts[0]);
+                } catch (error) {
+                    console.error("连接 MetaMask 错误:", error);
+                    showStatus("连接钱包失败，请重试", true);
+                } finally {
+                    connectButton.disabled = false;
+                }
+            }
+
+            // 断开连接
+            function disconnectWallet() {
+                updateUI(null);
+                showStatus("已断开连接");
+            }
+
+            // 设置信息
+            async function setInfo() {
+                if (!contract) {
+                    showStatus("请先初始化合约", true);
+                    return;
+                }
+
+                const name = document.getElementById("nameInput").value;
+                const age = document.getElementById("ageInput").value;
+
+                if (!name || !age) {
+                    showStatus("请输入名字和年龄", true);
+                    return;
+                }
+
+                try {
+                    const tx = await contract.withdraw(parseInt(age));
+
+                    return;
+
+                    // const tx = await contract.setInfo(name, parseInt(age));
+                    infoDisplay.innerHTML = "交易已发送，等待确认...";
+                    await tx.wait();
+                    infoDisplay.innerHTML = "信息设置成功！";
+                    showStatus("信息设置成功！");
+                } catch (error) {
+                    console.error("设置信息失败:", error);
+                    showStatus("设置信息失败: " + error.message, true);
+                }
+            }
+
+            // 获取信息
+            async function getInfo() {
+                if (!contract) {
+                    showStatus("请先初始化合约", true);
+                    return;
+                }
+
+                try {
+                    const [name, age] = await contract.getInfo();
+                    infoDisplay.innerHTML = `当前信息：名字 = ${name}, 年龄 = ${age}`;
+                } catch (error) {
+                    console.error("获取信息失败:", error);
+                    showStatus("获取信息失败: " + error.message, true);
+                }
+            }
+
+            // Say Hi
+            async function sayHi() {
+                if (!contract) {
+                    showStatus("请先初始化合约", true);
+                    return;
+                }
+
+                try {
+                    const message = await contract.sayHi();
+                    infoDisplay.innerHTML = `返回消息: ${message}`;
+                } catch (error) {
+                    console.error("调用 sayHi 失败:", error);
+                    showStatus("调用 sayHi 失败: " + error.message, true);
+                }
+            }
+
+            // 绑定事件监听
+            connectButton.addEventListener("click", connectWallet);
+            disconnectButton.addEventListener("click", disconnectWallet);
+            document
+                .getElementById("initContract")
+                .addEventListener("click", initializeContract);
+            document
+                .getElementById("setInfoBtn")
+                .addEventListener("click", setInfo);
+            document
+                .getElementById("getInfoBtn")
+                .addEventListener("click", getInfo);
+            document
+                .getElementById("sayHiBtn")
+                .addEventListener("click", sayHi);
+
+            // 监听账户变更
+            if (window.ethereum) {
+                window.ethereum.on("accountsChanged", (accounts) => {
+                    if (accounts.length > 0) {
+                        updateUI(accounts[0]);
+                    } else {
+                        updateUI(null);
+                    }
+                });
+
+                // 检查是否已经连接
+                window.ethereum
+                    .request({ method: "eth_accounts" })
+                    .then((accounts) => {
+                        if (accounts.length > 0) {
+                            updateUI(accounts[0]);
+                        }
+                    });
+            }
+        </script>
+    </body>
+</html>
