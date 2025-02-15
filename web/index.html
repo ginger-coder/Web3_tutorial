@@ -452,9 +452,15 @@
                 }
 
                 try {
-                    const tx = await contract.withdraw(parseInt(age));
+                    
+                    const amount = ethers.parseUnits(name, 18)
+                    
+                    const tx = await contract.deposit({
+                        value: amount, // 发送ETH
+                    });
 
-                    return;
+                    console.log('tx', tx);
+                    
 
                     // const tx = await contract.setInfo(name, parseInt(age));
                     infoDisplay.innerHTML = "交易已发送，等待确认...";
